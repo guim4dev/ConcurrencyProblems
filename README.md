@@ -1,4 +1,4 @@
-# surfsh
+# Locks and Condition Variables
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\
 Created during PLE 2020 at UFRJ, as the second mandatory project for the Operational Systems lecture.
 
