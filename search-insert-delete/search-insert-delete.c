@@ -9,6 +9,7 @@ void *searcher(void *arg) {
     pthread_rwlock_tryrdlock(&RWLock);
     printf("Faz o search\n");
     pthread_rwlock_unlock(&RWLock);
+    sleep(1);
   }
 }
 
@@ -18,6 +19,7 @@ void *inserter(void *arg) {
     pthread_rwlock_trywrlock(&RWLock);
     printf("Faz o insert\n");
     pthread_rwlock_unlock(&RWLock);
+    sleep(1);
   }
 }
 
@@ -27,6 +29,7 @@ void *deleter(void *arg) {
     pthread_rwlock_trywrlock(&RWLock);
     printf("Faz o delete\n");
     pthread_rwlock_unlock(&RWLock);
+    sleep(1);
   }
 }
 

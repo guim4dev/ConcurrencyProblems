@@ -81,7 +81,7 @@ int main(void) {
     }
   }
 
-  // Programa só finaliza quando terminar a execução da thread do produtor
+  // Programa só finaliza quando terminar a execução da thread do produtor (quando esgotam-se as moléculas)
   pthread_join(producer, NULL);
   return 0;
 }
