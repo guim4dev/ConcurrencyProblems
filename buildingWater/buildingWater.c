@@ -81,7 +81,7 @@ int main(void) {
     }
   }
 
-  // Programa só finaliza quando terminar a execução da thread do produtor (nunca)
+  // Programa só finaliza quando terminar a execução da thread do produtor
   pthread_join(producer, NULL);
   return 0;
 }
