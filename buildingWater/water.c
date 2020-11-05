@@ -6,12 +6,12 @@ int hydrogenWaiting = 0;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t oxyQueueFree = PTHREAD_COND_INITIALIZER;
-pthread_cond_t oxyQueueFull = PTHREAD_COND_INITIALIZER;
+// pthread_cond_t oxyQueueFull = PTHREAD_COND_INITIALIZER;
 pthread_cond_t hydroQueueFree = PTHREAD_COND_INITIALIZER;
-pthread_cond_t hydroQueueFull = PTHREAD_COND_INITIALIZER;
+// pthread_cond_t hydroQueueFull = PTHREAD_COND_INITIALIZER;
 
 void *bond() {
-  printf("Formando molécula");
+  printf("Formando molécula\n");
   hydrogenWaiting = 0;
   oxygenWaiting = 0;
   pthread_cond_signal(&oxyQueueFree);
@@ -29,8 +29,8 @@ void *oxygen(void *arg) {
   }
   printf("Espaço vazio para o oxigênio. Ocupando-o...\n");
   oxygenWaiting = 1;
-  printf("Enviando sinal de fila de oxigênio cheia.\n");
-  pthread_cond_signal(&oxyQueueFull);
+  // printf("Enviando sinal de fila de oxigênio cheia.\n");
+  // pthread_cond_signal(&oxyQueueFull);
   if (hydrogenWaiting == 2) {
     bond();
   }
@@ -48,10 +48,10 @@ void *hydrogen(void *arg) {
   }
   printf("Espaço vazio para o hidrogênio. Ocupando-o...\n");
   hydrogenWaiting = hydrogenWaiting + 1;
-  if (hydrogenWaiting == 2) {
-    printf("Enviando sinal de fila de hidrogênio cheia.\n");
-    pthread_cond_signal(&hydroQueueFull);
-  }
+  // if (hydrogenWaiting == 2) {
+  //   printf("Enviando sinal de fila de hidrogênio cheia.\n");
+  //   pthread_cond_signal(&hydroQueueFull);
+  // }
   if (oxygenWaiting == 1) {
     bond();
   }
@@ -84,20 +84,20 @@ void *hydrogen(void *arg) {
 // }
 
 int main(void) {
-  pthread_t oxy[10]; // 10 oxygens
-  pthread_t hydro[20]; // 20 hydrogens
+  pthread_t oxy[5]; // 10 oxygens
+  pthread_t hydro[10]; // 20 hydrogens
 
-  for (int i = 0; i < 20; i++) {
+  for (int i = 0; i < 4; i++) {
     pthread_create(&hydro[i], NULL, hydrogen, NULL);
     if (i%2 == 0) {
-      pthread_create(&oxy[i/2], NULL, hydrogen, NULL);
+      pthread_create(&oxy[i/2], NULL, oxygen, NULL);
     }
   }
 
-  for (int i = 0; i < 20; i++) {
-    pthread_join(&hydro[i], NULL);
+  for (int i = 0; i < 4; i++) {
+    pthread_join(hydro[i], NULL);
     if (i%2 == 0) {
-      pthread_join(&oxy[i/2], NULL);
+      pthread_join(oxy[i/2], NULL);
     }
   }
   return 0;
