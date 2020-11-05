@@ -5,7 +5,7 @@ Created during PLE 2020 at UFRJ, as the second mandatory project for the Operati
 ## Running
 Escolhendo um dos problemas, realize o seguinte passo a passo, a partir do diretório do projeto:
 ```shell
-$ > cd ./[problema]
+$ > cd [problema]
 $ > make
 # Rodar com output no próprio shell
 $ > ./[problema]
