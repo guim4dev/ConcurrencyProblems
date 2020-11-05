@@ -1,21 +1,36 @@
 #include <stdio.h>
 #include <pthread.h>
+#define MOLECULE_CAP 10
 
-int oxygenWaiting = 0;
-int hydrogenWaiting = 0;
+int moleculeCounter = 0;
+int oxygenSpots = 1;
+int hydrogenSpots = 2;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t oxyQueueFree = PTHREAD_COND_INITIALIZER;
-// pthread_cond_t oxyQueueFull = PTHREAD_COND_INITIALIZER;
-pthread_cond_t hydroQueueFree = PTHREAD_COND_INITIALIZER;
-// pthread_cond_t hydroQueueFull = PTHREAD_COND_INITIALIZER;
+pthread_cond_t queuesFree = PTHREAD_COND_INITIALIZER;
+pthread_cond_t queuesReady = PTHREAD_COND_INITIALIZER;
 
-void *bond() {
-  printf("Formando molécula\n");
-  hydrogenWaiting = 0;
-  oxygenWaiting = 0;
-  pthread_cond_signal(&oxyQueueFree);
-  pthread_cond_signal(&hydroQueueFree);
+
+void *moleculeProducer(void *arg) {
+  // Roda até chegar no MOLECULE_CAP
+  while(moleculeCounter < MOLECULE_CAP) {
+    printf("Produtor de Moléculas tenta pegar o lock...\n");
+    pthread_mutex_lock(&mutex);
+    while(oxygenSpots != 0 || hydrogenSpots != 0) {
+      printf("Produtor esperando pelo sinal de filas prontas para formação de molécula...\n");
+      pthread_cond_wait(&queuesReady, &mutex);
+    }
+
+    printf("\033[1;32m");
+    printf("Formando molécula\n");
+    moleculeCounter++;
+    printf("\033[0m");
+    oxygenSpots = 1;
+    hydrogenSpots = 2;
+    printf("Produtor sinaliza que as filas estão livres...\n");
+    pthread_cond_signal(&queuesFree);
+    pthread_mutex_unlock(&mutex);
+  }
   return NULL;
 }
 
@@ -23,16 +38,15 @@ void *oxygen(void *arg) {
   printf("Oxigênio tenta pegar o lock.\n");
   pthread_mutex_lock(&mutex);
   printf("Oxigênio verifica se tem vaga para formar molécula.\n");
-  while (oxygenWaiting == 1) {
+  while (oxygenSpots == 0) {
     printf("Não há espaço, esperando...\n");
-    pthread_cond_wait(&oxyQueueFree, &mutex);
+    pthread_cond_wait(&queuesFree, &mutex);
   }
   printf("Espaço vazio para o oxigênio. Ocupando-o...\n");
-  oxygenWaiting = 1;
-  // printf("Enviando sinal de fila de oxigênio cheia.\n");
-  // pthread_cond_signal(&oxyQueueFull);
-  if (hydrogenWaiting == 2) {
-    bond();
+  oxygenSpots = 0;
+  if (hydrogenSpots == 0) {
+    printf("Oxigênio avisa que as filas estão prontas\n");
+    pthread_cond_signal(&queuesReady);
   }
   pthread_mutex_unlock(&mutex);
   return NULL;
@@ -42,63 +56,35 @@ void *hydrogen(void *arg) {
   printf("Hidrogênio tenta pegar o lock.\n");
   pthread_mutex_lock(&mutex);
   printf("Hidrogênio verifica se tem vaga para formar molécula.\n");
-  while (hydrogenWaiting == 2) {
+  while (hydrogenSpots == 0) {
     printf("Não há espaço, esperando...\n");
-    pthread_cond_wait(&hydroQueueFree, &mutex);
+    pthread_cond_wait(&queuesFree, &mutex);
   }
   printf("Espaço vazio para o hidrogênio. Ocupando-o...\n");
-  hydrogenWaiting = hydrogenWaiting + 1;
-  // if (hydrogenWaiting == 2) {
-  //   printf("Enviando sinal de fila de hidrogênio cheia.\n");
-  //   pthread_cond_signal(&hydroQueueFull);
-  // }
-  if (oxygenWaiting == 1) {
-    bond();
+  hydrogenSpots--;
+  if (oxygenSpots == 0 && hydrogenSpots == 0) {
+    printf("Hidrogênio avisa que as filas estão prontas\n");
+    pthread_cond_signal(&queuesReady);
   }
   pthread_mutex_unlock(&mutex);
   return NULL;
 }
 
-// void *barrier(void *arg) {
-//   while(1) {
-//     pthread_mutex_lock(&mutex);
-//     while()
-//     pthread_cond_wait(&oxyQueueFull, &mutex);
-//     pthread_cond_wait(&hydroQueueFull, &mutex);
-//     printf("Formando molécula, passando pela barreira e limpando fila.\n");
-//     hydrogenWaiting = 0;
-//     oxygenWaiting = 0;
-//     pthread_cond_signal(&oxyQueueFree);
-//     pthread_cond_signal(&hydroQueueFree);
-//   }
-//   pthread_mutex_lock(&mutex);
-
-//   pthread_cond_wait(&oxyQueueFull, &mutex);
-//   pthread_cond_wait(&hydroQueueFull, &mutex);
-//   printf("Formando molécula, passando pela barreira e limpando fila.\n");
-//   hydrogenWaiting = 0;
-//   oxygenWaiting = 0;
-//   pthread_cond_signal(&oxyQueueFree);
-//   pthread_cond_signal(&hydroQueueFree);
-//   return NULL;
-// }
-
 int main(void) {
-  pthread_t oxy[5]; // 10 oxygens
-  pthread_t hydro[10]; // 20 hydrogens
+  pthread_t oxy[MOLECULE_CAP]; // molecule_cap oxygens
+  pthread_t hydro[2*MOLECULE_CAP]; // 2*molecule_cap hydrogens
+  pthread_t producer;
+  // Criando Thread para produtor de moleculas
+  pthread_create(&producer, NULL, moleculeProducer, NULL);
 
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 2*MOLECULE_CAP; i++) {
     pthread_create(&hydro[i], NULL, hydrogen, NULL);
     if (i%2 == 0) {
       pthread_create(&oxy[i/2], NULL, oxygen, NULL);
     }
   }
 
-  for (int i = 0; i < 4; i++) {
-    pthread_join(hydro[i], NULL);
-    if (i%2 == 0) {
-      pthread_join(oxy[i/2], NULL);
-    }
-  }
+  // Programa só finaliza quando terminar a execução da thread do produtor (nunca)
+  pthread_join(producer, NULL);
   return 0;
 }
