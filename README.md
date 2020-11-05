@@ -2,6 +2,17 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)\
 Created during PLE 2020 at UFRJ, as the second mandatory project for the Operational Systems lecture.
 
+## Running
+Escolhendo um dos problemas, realize o seguinte passo a passo, a partir do diretório do projeto:
+```shell
+$ > cd [problema]
+$ > make
+# Rodar com output no próprio shell
+$ > ./[problema]
+# Rodar colocando para algum log
+$ > ./[problema] > [problema].log 
+```
+
 ## License
 
 The MIT License (MIT)
