@@ -2,6 +2,8 @@
 #include <pthread.h>
 #include <unistd.h>
 
+// Problema do Sushi-Bar, sessão 7.1
+
 int currentSeatsAvailable = 5;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t seatsAvailable = PTHREAD_COND_INITIALIZER; 
@@ -47,6 +49,7 @@ void *customerLeaves(void *arg) {
       printf("Customer desocupa um lugar.\n");
       currentSeatsAvailable++;
     } else if (currentSeatsAvailable == 0) {
+      // Quando estiver um grupo sentado, ele tem que sair todo de uma vez só (party leaving)
       pthread_cond_signal(&seatsFull);
     } else {
       printf("Ninguém está sentado.\n");

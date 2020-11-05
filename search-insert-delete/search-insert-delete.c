@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <unistd.h>
+
+// Problema do Search-insert-delete, sessão 6.1
 
 pthread_rwlock_t RWLock = PTHREAD_RWLOCK_INITIALIZER;
 

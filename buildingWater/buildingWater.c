@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <unistd.h>
 #define MOLECULE_CAP 5
+
+// Problema de Construção de H2O, sessão 5.6 
 
 int moleculeCounter = 0;
 int oxygenSpots = 1;
@@ -46,6 +49,7 @@ void *oxygen(void *arg) {
     pthread_cond_signal(&queuesReady);
   }
   pthread_mutex_unlock(&mutex);
+  sleep(1);
   return NULL;
 }
 
@@ -64,6 +68,7 @@ void *hydrogen(void *arg) {
     pthread_cond_signal(&queuesReady);
   }
   pthread_mutex_unlock(&mutex);
+  sleep(1);
   return NULL;
 }
 

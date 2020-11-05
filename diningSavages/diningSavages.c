@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <unistd.h>
 
 int servings = 3; // começamos com 3 servings dentro do pot
 
@@ -20,6 +21,7 @@ void *savage() {
     printf("Savage pega 1 serving.\n");
     servings = servings - 1;
     pthread_mutex_unlock(&mutex);
+    sleep(1);
   }
 }
 
@@ -35,6 +37,7 @@ void *cook() {
     servings = 3;
     pthread_cond_signal(&fullPot);
     pthread_mutex_unlock(&mutex);
+    sleep(1);
   }
 }
 
