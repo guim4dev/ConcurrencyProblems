@@ -7,7 +7,7 @@ CFLAGS  = -Wall -Werror -D_POSIX_THREAD_SEMANTICS
 LDFLAGS = -pthread
 
 # the build target executable:
-TARGET = water
+TARGET = buildingWater
 
 compile: $(TARGET)
 

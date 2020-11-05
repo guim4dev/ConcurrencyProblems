@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <pthread.h>
-#define MOLECULE_CAP 10
+#define MOLECULE_CAP 5
 
 int moleculeCounter = 0;
 int oxygenSpots = 1;
@@ -20,11 +20,8 @@ void *moleculeProducer(void *arg) {
       printf("Produtor esperando pelo sinal de filas prontas para formação de molécula...\n");
       pthread_cond_wait(&queuesReady, &mutex);
     }
-
-    printf("\033[1;32m");
     printf("Formando molécula\n");
     moleculeCounter++;
-    printf("\033[0m");
     oxygenSpots = 1;
     hydrogenSpots = 2;
     printf("Produtor sinaliza que as filas estão livres...\n");
