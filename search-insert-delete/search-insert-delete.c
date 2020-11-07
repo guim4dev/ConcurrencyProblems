@@ -8,7 +8,7 @@ pthread_rwlock_t RWLock = PTHREAD_RWLOCK_INITIALIZER;
 
 void *searcher(void *arg) {
   while(1) {
-    printf("Searcher pega o lock\n");
+    printf("Searcher tenta pegar o lock\n");
     pthread_rwlock_tryrdlock(&RWLock);
     printf("Faz o search\n");
     pthread_rwlock_unlock(&RWLock);
@@ -18,7 +18,7 @@ void *searcher(void *arg) {
 
 void *inserter(void *arg) {
   while(1) {
-    printf("Inserter pega o lock\n");
+    printf("Inserter tenta pegar o lock\n");
     pthread_rwlock_trywrlock(&RWLock);
     printf("Faz o insert\n");
     pthread_rwlock_unlock(&RWLock);
@@ -28,7 +28,7 @@ void *inserter(void *arg) {
 
 void *deleter(void *arg) {
   while(1) {
-    printf("Deleter pega o lock\n");
+    printf("Deleter tenta pegar o lock\n");
     pthread_rwlock_trywrlock(&RWLock);
     printf("Faz o delete\n");
     pthread_rwlock_unlock(&RWLock);
