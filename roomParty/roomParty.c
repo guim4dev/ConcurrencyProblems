@@ -66,7 +66,7 @@ void *student(void *arg) {
 
 
 int main(void) {
-  pthread_t students[200];
+  pthread_t students[100];
   pthread_t Dean;
   // Criando Thread para o Reitor
   pthread_create(&Dean, NULL, dean, NULL);
