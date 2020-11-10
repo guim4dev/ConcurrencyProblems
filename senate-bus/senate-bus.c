@@ -28,14 +28,12 @@ void *busStop(void *arg) {
     peopleBoarded = 0;
     pthread_mutex_unlock(&mutex);
   }
-  sleep(1);
 }
 
 void *rider(void *arg) {
   int canBoard = 0;
   int didntTravel = 1;
   while (didntTravel) {
-    usleep(100000);
     pthread_mutex_lock(&mutex);
     while (busStopped == 0) {
       if (canBoard == 0) {

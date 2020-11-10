@@ -9,35 +9,38 @@ pthread_rwlock_t RWLock = PTHREAD_RWLOCK_INITIALIZER;
 void *searcher(void *arg) {
   while(1) {
     printf("Searcher tenta pegar o lock\n");
+    // tryrd lock permite pegar lock enquanto há outra thread fazendo somente leitura
     pthread_rwlock_tryrdlock(&RWLock);
     printf("Faz o search\n");
     pthread_rwlock_unlock(&RWLock);
-    sleep(1);
+    printf("Searcher solta o lock\n");
   }
 }
 
 void *inserter(void *arg) {
   while(1) {
     printf("Inserter tenta pegar o lock\n");
+    // trywr lock blockeia qualquer outro tipo de lock e só é permitido quando ninguém possui qualquer lock (leitura ou escrita) 
     pthread_rwlock_trywrlock(&RWLock);
     printf("Faz o insert\n");
     pthread_rwlock_unlock(&RWLock);
-    sleep(1);
+    printf("Inserter solta o lock\n");
   }
 }
 
 void *deleter(void *arg) {
   while(1) {
     printf("Deleter tenta pegar o lock\n");
+    // trywr lock blockeia qualquer outro tipo de lock e só é permitido quando ninguém possui qualquer lock (leitura ou escrita) 
     pthread_rwlock_trywrlock(&RWLock);
     printf("Faz o delete\n");
     pthread_rwlock_unlock(&RWLock);
-    sleep(1);
+    printf("Deleter solta o lock\n");
   }
 }
 
 int main(void) {
-  pthread_t searchers[4];
+  pthread_t searchers[6];
   pthread_t inserters[2];
   pthread_t deleters[2];
 
