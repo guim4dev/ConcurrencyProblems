@@ -50,16 +50,16 @@ void *rider(void *arg) {
 
 
 int main(void) {
-  pthread_t students[100];
-  pthread_t Dean;
-  // Criando Thread para o Reitor
-  pthread_create(&Dean, NULL, dean, NULL);
+  pthread_t travelers[200];
+  pthread_t station;
+  // Criando Thread para o busStop
+  pthread_create(&station, NULL, busStop, NULL);
 
-  for (int i = 0; i < 100; i++) {
-    pthread_create(&students[i], NULL, student, NULL);
+  for (int i = 0; i < 200; i++) {
+    pthread_create(&travelers[i], NULL, rider, NULL);
   }
 
   // Programa só finaliza quando terminar a execução da thread do Reitor (nunca)
-  pthread_join(Dean, NULL);
+  pthread_join(station, NULL);
   return 0;
 }
