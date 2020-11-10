@@ -20,6 +20,7 @@ void *moleculeProducer(void *arg) {
     pthread_mutex_lock(&mutex);
     // Enquanto ainde houver vaga para oxigenio ou hidrogenio, o produtor espera o sinal de filas prontas para formação de molécula
     while(oxygenSpots != 0 || hydrogenSpots != 0) {
+      printf("Produtor esperando aviso de que as filas estão prontas para formar molécula\n");
       pthread_cond_wait(&queuesReady, &mutex);
     }
     printf("Formando molécula\n");
