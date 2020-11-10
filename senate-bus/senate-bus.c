@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
+#define min(X, Y) (((X) < (Y)) ? (X) : (Y))
 
 // Problema de Senate Bus, seção 7.4
 
 int busStopped = 0;
 int peopleBoarded = 0;
+int peopleAbleToBoard = 0;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t busArrived = PTHREAD_COND_INITIALIZER;
@@ -15,13 +17,16 @@ void *busStop(void *arg) {
   while(1) {
     pthread_mutex_lock(&mutex);
     printf("Bus Arrives\n");
-    pthread_cond_signal(&busArrived);
-    pthread_cond_wait(&busFull, &mutex);
-    printf("Bus leaving with %d\n", peopleBoarded);
+    busStopped = 1;
+    if (peopleAbleToBoard != 0 ) {
+      pthread_cond_broadcast(&busArrived);
+      pthread_cond_wait(&busFull, &mutex);
+    }
+    printf("Bus leaving with %d people\n", peopleBoarded);
     busStopped = 0;
     peopleBoarded = 0;
+    peopleAbleToBoard = 0;
     pthread_mutex_unlock(&mutex);
-    sleep(1); // Wait a minute until another bus gets here
   }
 }
 
@@ -33,31 +38,32 @@ void *rider(void *arg) {
     while (busStopped == 0) {
       printf("Rider esperando bus chegar\n");
       canBoard = 1;
+      peopleAbleToBoard++;
       pthread_cond_wait(&busArrived, &mutex);
     }
     if (canBoard && peopleBoarded < 50) {
       printf("Rider entrando no bus\n");
       peopleBoarded++;
       didntTravel = 0;
-      if (peopleBoarded == 50) {
-        printf("Rider avisa para o motorista que o bus está cheio\n");
+      if (peopleBoarded == min(peopleAbleToBoard, 50)) {
+        printf("Rider avisa para o motorista que o bus está completo com as pessoas que podem subir\n");
         pthread_cond_signal(&busFull);
       }
     }
     pthread_mutex_unlock(&mutex);
   }
+  return NULL;
 }
 
 
 int main(void) {
   pthread_t travelers[200];
   pthread_t station;
-  // Criando Thread para o busStop
-  pthread_create(&station, NULL, busStop, NULL);
 
   for (int i = 0; i < 200; i++) {
     pthread_create(&travelers[i], NULL, rider, NULL);
   }
+  pthread_create(&station, NULL, busStop, NULL);
 
   // Programa só finaliza quando terminar a execução da thread do Reitor (nunca)
   pthread_join(station, NULL);

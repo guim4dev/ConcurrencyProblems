@@ -30,7 +30,7 @@ void *dean(void *arg) {
     }
     printf("Dean saindo da sala\n");
     deanInRoom = 0;
-    pthread_cond_signal(&deanLeft);
+    pthread_cond_broadcast(&deanLeft);
     pthread_mutex_unlock(&mutex);
   }
 }
