@@ -30,6 +30,7 @@ void *dean(void *arg) {
     }
     printf("Dean saindo da sala\n");
     deanInRoom = 0;
+    // Após sair, reitor avisa aos alunos esperando que ele saiu
     pthread_cond_broadcast(&deanLeft);
     pthread_mutex_unlock(&mutex);
   }
@@ -37,9 +38,10 @@ void *dean(void *arg) {
 
 void *student(void *arg) {
   int insideRoom = 0;
-  // alunos ficam tentando entrar e sair da sala sempre
+  // Alunos ficam tentando entrar e sair da sala sempre (party = festa)
   while(1) {
     pthread_mutex_lock(&mutex);
+    // enquanto aluno estiver fora da sala e o Reitor estiver dentro, ele espera ele sair para entrar
     while (insideRoom == 0 && deanInRoom) {
       printf("Aluno esperando dean sair para entrar na sala\n");
       pthread_cond_wait(&deanLeft, &mutex);
@@ -48,19 +50,18 @@ void *student(void *arg) {
     insideRoom = 1;
     studentsInRoom++;
     pthread_mutex_unlock(&mutex);
+    // Aluno Perde o Lock após entrar na sala
 
-    sleep(1); // Aluno fica algum tempo na sala
-
+    // Aluno pega o Lock novamente para sair da sala
     pthread_mutex_lock(&mutex);
     printf("Aluno saindo da sala\n");
     insideRoom = 0;
     studentsInRoom--;
-    if (studentsInRoom == 0) {
+    // Se o aluno for o último a sair e o reitor estiver na sala, ele avisa o reitor que não há mais estudantes na sala
+    if (studentsInRoom == 0 && deanInRoom) {
       pthread_cond_signal(&studentsLeft);
     }
     pthread_mutex_unlock(&mutex);
-
-    sleep(1); // Aluno espera um pouco para entrar na sala novamente
   }
 }
 

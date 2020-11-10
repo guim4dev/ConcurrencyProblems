@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
-#define MOLECULE_CAP 5
+#define MOLECULE_CAP 100
 
 // Problema de Construção de H2O, sessão 5.6 
 
@@ -17,58 +17,54 @@ pthread_cond_t queuesReady = PTHREAD_COND_INITIALIZER;
 void *moleculeProducer(void *arg) {
   // Roda até chegar no MOLECULE_CAP
   while(moleculeCounter < MOLECULE_CAP) {
-    printf("Produtor de Moléculas tenta pegar o lock...\n");
     pthread_mutex_lock(&mutex);
+    // Enquanto ainde houver vaga para oxigenio ou hidrogenio, o produtor espera o sinal de filas prontas para formação de molécula
     while(oxygenSpots != 0 || hydrogenSpots != 0) {
-      printf("Produtor esperando pelo sinal de filas prontas para formação de molécula...\n");
       pthread_cond_wait(&queuesReady, &mutex);
     }
     printf("Formando molécula\n");
+    // Após formar a molécula, aumentamos o contador de moléculas e resetamos as vagas
     moleculeCounter++;
     oxygenSpots = 1;
     hydrogenSpots = 2;
-    printf("Produtor sinaliza que as filas estão livres...\n");
-    pthread_cond_signal(&queuesFree);
+    // Produtor sinaliza que as filas estão livres para as moléculas esperando
+    pthread_cond_broadcast(&queuesFree);
     pthread_mutex_unlock(&mutex);
   }
   return NULL;
 }
 
 void *oxygen(void *arg) {
-  printf("Oxigênio tenta pegar o lock.\n");
   pthread_mutex_lock(&mutex);
-  printf("Oxigênio verifica se tem vaga para formar molécula.\n");
+  // Enquanto não houver vaga para formar molécula, o oxigênio espera a liberação de vaga
   while (oxygenSpots == 0) {
-    printf("Não há espaço, esperando...\n");
+    printf("Sem vaga para o oxigênio\n");
     pthread_cond_wait(&queuesFree, &mutex);
   }
   printf("Espaço vazio para o oxigênio. Ocupando-o...\n");
   oxygenSpots = 0;
+  // Caso as vagas de hidrogênio já estejam ocupadas também, o oxigênio avisa que as filas estão prontas
   if (hydrogenSpots == 0) {
-    printf("Oxigênio avisa que as filas estão prontas\n");
     pthread_cond_signal(&queuesReady);
   }
   pthread_mutex_unlock(&mutex);
-  sleep(1);
   return NULL;
 }
 
 void *hydrogen(void *arg) {
-  printf("Hidrogênio tenta pegar o lock.\n");
   pthread_mutex_lock(&mutex);
-  printf("Hidrogênio verifica se tem vaga para formar molécula.\n");
+  // Enquanto não houver vaga para formar molécula, o hidrogênio espera a liberação de vaga
   while (hydrogenSpots == 0) {
-    printf("Não há espaço, esperando...\n");
+    printf("Sem vaga para o hidrogênio\n");
     pthread_cond_wait(&queuesFree, &mutex);
   }
   printf("Espaço vazio para o hidrogênio. Ocupando-o...\n");
   hydrogenSpots--;
+  // Caso as vagas de hidrogênio e as de oxigênio já estejam ocupadas totalmente, o hidrogênio avisa que as filas estão prontas
   if (oxygenSpots == 0 && hydrogenSpots == 0) {
-    printf("Hidrogênio avisa que as filas estão prontas\n");
     pthread_cond_signal(&queuesReady);
   }
   pthread_mutex_unlock(&mutex);
-  sleep(1);
   return NULL;
 }
 
