@@ -9,7 +9,7 @@ LDFLAGS = -pthread
 # the build target executable:
 TARGET = roomParty
 
-compile: $(TARGET)
+all: $(TARGET)
 
 $(TARGET): $(TARGET).c
 	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).c $(LDFLAGS)
